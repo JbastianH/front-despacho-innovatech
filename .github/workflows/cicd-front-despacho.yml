@@ -1,40 +1,35 @@
-
-name: Deploy Frontend to Amazon ECR
+name: Despliegue Frontend a Amazon ECR
 
 on:
   push:
     branches: [ "deploy" ]
 
 env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: app-despacho
+  AWS_REGION: us-east-1                 
+  ECR_REPOSITORY: front-despacho 
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    
-name: Checkout Code
-    uses: actions/checkout@v4
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
 
-    
-name: Configure AWS credentials
-    uses: aws-actions/configure-aws-credentials@v4
-    with:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-      aws-region: ${{ env.AWS_REGION }}
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-    
-name: Login to Amazon ECR
-    id: login-ecr
-    uses: aws-actions/amazon-ecr-login@v2
+      - name: Iniciar sesion en Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-    
-name: Build and Push Image
-    env:
-      ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-    run: |
-      docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-      docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      - name: Construir imagen y subir a la nube
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
