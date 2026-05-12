@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: us-east-1                 
-  ECR_REPOSITORY: front-despacho 
+  ECR_REPOSITORY: front-despacho-innovatech 
 
 jobs:
   deploy:
