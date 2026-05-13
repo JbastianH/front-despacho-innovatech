@@ -1,0 +1,50 @@
+name: Despliegue Frontend a Amazon ECR
+
+on:
+  push:
+    branches: [ "deploy" ]
+
+env:
+  AWS_REGION: us-east-1                 
+  ECR_REPOSITORY: front-despacho-innovatech 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Iniciar sesion en Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Construir imagen y subir a la nube
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      # Se define el paso para desplegar el frontend en la instancia EC2 pública mediante AWS Systems Manager (SSM).
+      - name: Deploy Frontend to EC2 via SSM
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=instanceids,Values=i-05386ce8d8df0f43a" \
+            --comment "Se actualiza el contenedor del Frontend (Nginx) en producción" \
+            --parameters 'commands=[
+              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 772895821453.dkr.ecr.us-east-1.amazonaws.com",
+              "docker pull 772895821453.dkr.ecr.us-east-1.amazonaws.com/front-despacho-innovatech:latest",
+              "docker rm -f contenedor-frontend || true",
+              "docker run -d -p 80:80 --name contenedor-frontend 772895821453.dkr.ecr.us-east-1.amazonaws.com/front-despacho-innovatech:latest",
+              "docker image prune -f"
+            ]' \
+            --region us-east-1
