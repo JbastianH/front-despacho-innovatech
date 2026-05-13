@@ -1,0 +1,10 @@
+services:
+  front-despacho:
+    image: 772895821453.dkr.ecr.us-east-1.amazonaws.com/front-despacho-repo:latest
+    container_name: front-despacho
+    ports:
+      - [cite_start]"80:80" # IE5: Acceso público [cite: 121]
+    environment:
+      # Debes usar la IP PRIVADA de las otras EC2 para la comunicación interna [cite: 71, 173]
+      - NEXT_PUBLIC_API_VENTAS=http://IP_PRIVADA_VENTAS:8081
+      - NEXT_PUBLIC_API_DESPACHOS=http://IP_PRIVADA_DESPACHO:8080
