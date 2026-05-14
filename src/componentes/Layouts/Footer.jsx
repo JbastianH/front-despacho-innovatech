@@ -26,7 +26,7 @@ function Footer() {
                 </li>
                 <li>
                   <a href="#" className="hover:underline">
-                    Cobertura
+                    Cobertura Profe Luis
                   </a>
                 </li>
               </ul>
