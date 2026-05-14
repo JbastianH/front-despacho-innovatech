@@ -38,13 +38,13 @@ jobs:
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=instanceids,Values=i-05386ce8d8df0f43a" \
+            --instance-ids "i-05386ce8d8df0f43a" \
             --comment "Se actualiza el contenedor del Frontend (Nginx) en producción" \
-            --parameters 'commands=[
+            --parameters '{"commands":[
               "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 772895821453.dkr.ecr.us-east-1.amazonaws.com",
               "docker pull 772895821453.dkr.ecr.us-east-1.amazonaws.com/front-despacho-innovatech:latest",
               "docker rm -f contenedor-frontend || true",
               "docker run -d -p 80:80 --name contenedor-frontend 772895821453.dkr.ecr.us-east-1.amazonaws.com/front-despacho-innovatech:latest",
               "docker image prune -f"
-            ]' \
+            ]}' \
             --region us-east-1
