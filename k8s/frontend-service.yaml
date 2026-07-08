@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # Se configura el servicio de tipo LoadBalancer para permitir acceso público desde el navegador
+  name: front-despacho-service
+  namespace: examen
+spec:
+  type: LoadBalancer
+  selector:
+    app: front-despacho
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

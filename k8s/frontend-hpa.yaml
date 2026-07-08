@@ -1,0 +1,21 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  # Se establece el autoescalador para gestionar picos de tráfico en el frontend
+  name: front-despacho-hpa
+  namespace: examen
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: front-despacho-deployment
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          # Se determina el umbral del 50% de uso de CPU para generar nuevas réplicas
+          averageUtilization: 50
