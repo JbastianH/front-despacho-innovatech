@@ -1,12 +1,15 @@
-name: Despliegue Frontend a Amazon ECR
+name: Despliegue Frontend a EKS
 
 on:
   push:
     branches: [ "deploy" ]
 
 env:
-  AWS_REGION: us-east-1                 
-  ECR_REPOSITORY: front-despacho-innovatech 
+  AWS_REGION: us-east-1
+  # Se especifica el repositorio exacto de ECR configurado para el frontend
+  ECR_REPOSITORY: examen-front
+  # Se especifica el nombre del clúster de Amazon EKS
+  EKS_CLUSTER_NAME: cluster-examen
 
 jobs:
   deploy:
@@ -30,21 +33,20 @@ jobs:
       - name: Construir imagen y subir a la nube
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        # Se compila la imagen con los archivos estáticos de la interfaz y se transfiere al registro
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-      # Se define el paso para desplegar el frontend en la instancia EC2 pública mediante AWS Systems Manager (SSM).
-      - name: Deploy Frontend to EC2 via SSM
+
+      - name: Conectar al Cluster EKS
+        # Se establece la conexión con el plano de control del clúster actualizando el archivo kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Desplegar en Kubernetes
+        # Se garantiza la existencia del espacio de nombres y se aplican los manifiestos de la capa de presentación
         run: |
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --instance-ids "i-05386ce8d8df0f43a" \
-            --comment "Se actualiza el contenedor del Frontend (Nginx) en producción" \
-            --parameters '{"commands":[
-              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 772895821453.dkr.ecr.us-east-1.amazonaws.com",
-              "docker pull 772895821453.dkr.ecr.us-east-1.amazonaws.com/front-despacho-innovatech:latest",
-              "docker rm -f contenedor-frontend || true",
-              "docker run -d --restart always -p 80:80 --name contenedor-frontend 772895821453.dkr.ecr.us-east-1.amazonaws.com/front-despacho-innovatech:latest",
-              "docker image prune -f"
-            ]}' \
-            --region us-east-1
+          kubectl create namespace examen --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f k8s/frontend-deployment.yaml -n examen
+          kubectl apply -f k8s/frontend-service.yaml -n examen
+          kubectl apply -f k8s/frontend-hpa.yaml -n examen
+          kubectl rollout restart deployment front-despacho-deployment -n examen
