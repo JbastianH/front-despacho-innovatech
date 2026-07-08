@@ -17,5 +17,5 @@ spec:
         name: cpu
         target:
           type: Utilization
-          # Se determina el umbral del 50% de uso de CPU para generar nuevas réplicas
-          averageUtilization: 50
+          # Se determina el umbral del 70% de uso de CPU para generar nuevas réplicas optimizando el consumo
+          averageUtilization: 70

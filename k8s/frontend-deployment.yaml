@@ -4,6 +4,7 @@ metadata:
   # Se define el nombre del despliegue para la interfaz de usuario
   name: front-despacho-deployment
   namespace: examen
+where:
 spec:
   replicas: 2
   selector:
@@ -21,3 +22,11 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 80
+          # Se establece la asignación de recursos mínimos y máximos para posibilitar el cálculo de porcentajes del HPA
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
