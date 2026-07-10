@@ -4,7 +4,6 @@ metadata:
   # Se define el nombre del despliegue para la interfaz de usuario
   name: front-despacho-deployment
   namespace: examen
-where:
 spec:
   replicas: 2
   selector:
@@ -16,17 +15,17 @@ spec:
         app: front-despacho
     spec:
       containers:
-        - name: front-despacho
-          # Se especifica la ruta de la imagen en Amazon ECR correspondiente al frontend
-          image: 680891292484.dkr.ecr.us-east-1.amazonaws.com/examen-front:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 80
-          # Se establece la asignación de recursos mínimos y máximos para posibilitar el cálculo de porcentajes del HPA
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
-              cpu: "500m"
-              memory: "1Gi"
+      - name: front-despacho
+        # Se especifica la ruta de la imagen en Amazon ECR correspondiente al frontend
+        image: 680891292484.dkr.ecr.us-east-1.amazonaws.com/examen-front:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        # Se establece la asignación de recursos mínimos y máximos para posibilitar el cálculo de porcentajes del HPA
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
